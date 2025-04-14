@@ -15,7 +15,8 @@ struct ContentView: View {
 
 	@State var searchTask: Task<Void, Never>? = nil
 	@State var relevantPaths: [URL] = []
-	
+	@State var partial: String?
+
 	var body: some View {
 		if editorViewModel.localizationFile != nil {
 			EditorView(editorViewModel: editorViewModel)
@@ -23,20 +24,38 @@ struct ContentView: View {
 			startupMenu
 		}
 	}
-	
+
+	@State var repoButton: Bool = false
+
 	var startupMenu: some View {
 		HStack {
 			VStack {
 				VStack {
 					Text("xcstring-tool")
 						.bold()
-					Text("llsc12/xcstring-tool")
-					Text("On GitHub")
+					Text("Edit xcstrings files")
+					Text("anywhere!")
 
 					Spacer()
 
+					if repoButton {
+						Button("llsc12/xcstring-tool") {
+							let url = "\"https://github.com/llsc12/xcstring-tool\""
+							#if os(macOS)
+								_ = try? Shell.run("open", url)
+							#elseif os(Linux)
+								_ = try? Shell.run("xdg-open", url)
+							#endif
+						}
+					}
+
 					Text("v\(_version)")
 						.bold()
+						.onAppear {
+							DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+								repoButton = true
+							}
+						}
 				}
 				.frame(maxWidth: .infinity)
 				.border(style: .rounded)
@@ -63,6 +82,7 @@ struct ContentView: View {
 
 					TextField(
 						placeholder: "Search Files",
+						initialValue: partial ?? "",
 						action: textfieldSubmit(_:),
 						update: textfieldUpdate(_:)
 					)
@@ -75,20 +95,20 @@ struct ContentView: View {
 				Divider()
 
 				filebox
-				.padding(.left, 1)
+					.padding(.left, 1)
 			}
 			.frame(maxWidth: .infinity, maxHeight: .infinity)
 			.border(style: .rounded)
 		}
 	}
-	
+
 	@ViewBuilder var filebox: some View {
 		if relevantPaths.isEmpty {
 			ScrollView {
 				Text("Recent Files")
 					.underline()
 					.padding(.bottom, 1)
-				
+
 				if editorViewModel.fileHistory.isEmpty {
 					Text("Recently opened files will appear here!")
 						.foregroundColor(.gray)
@@ -127,13 +147,14 @@ struct ContentView: View {
 			}
 			return
 		}
-		
+		self.partial = path
 		self.editorViewModel.file = url
 	}
 
 	func textfieldUpdate(_ partialPath: String) {
 		if partialPath.isEmpty {
 			self.relevantPaths = []
+			self.partial = nil
 			return
 		}
 		let url = URL(
@@ -145,6 +166,11 @@ struct ContentView: View {
 		var partial = url
 		if !FileManager.default.fileExists(atPath: url.absoluteURL.path) {
 			partial = url.deletingLastPathComponent()
+			self.partial = partialPath
+		}
+		if !url.hasDirectoryPath {
+			partial = url.deletingLastPathComponent()
+			self.partial = partialPath
 		}
 
 		let paths = try? FileManager.default

@@ -14,7 +14,7 @@ let package = Package(
 		])
 	],
 	dependencies: [
-		.package(url: "https://github.com/llsc12/SwiftTUI", branch: "main"),
+		.package(url: "https://github.com/llsc12/SwiftTUI", revision: "1f42222c2f3fe86d0098e93495420be6bf9c5ea9"),
 	],
 	targets: [
 		// Targets are the basic building blocks of a package, defining a module or a test suite.
@@ -23,7 +23,7 @@ let package = Package(
 			name: "xcstring-tool",
 			dependencies: [
 				.product(name: "SwiftTUI", package: "SwiftTUI"),
-			],
+			]
 		)
 	]
 )

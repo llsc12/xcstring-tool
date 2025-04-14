@@ -119,13 +119,14 @@ struct StringUnit: Codable {
 	var value: String
 }
 
+// Update the StringUnitState enum
 enum StringUnitState: String, Codable {
 	case new
 	case translated
 	case needsReview = "needs_review"
 	case stale
-	
-	case notTranslated // custom, used only in this app
+	case notTranslated  // custom, used only in this app
+	case none  // For source language entries that don't need translation state
 }
 
 struct Variations: Codable {
@@ -153,25 +154,34 @@ struct Variation: Codable {
 	var stringUnit: StringUnit
 }
 
-
 extension Localization {
-	var state: StringUnitState {
-		let allstringunits = {
-			var stringunits: [StringUnit] = []
-			if let a = stringUnit {
-				stringunits.append(a)
+	func getState(isBaseLanguage: Bool) -> StringUnitState {
+		let allStringUnits = {
+			var stringUnits: [StringUnit] = []
+			if let unit = stringUnit {
+				stringUnits.append(unit)
 			}
-			stringunits.append(contentsOf: variations?.plural?.values.map(\.stringUnit) ?? [])
-			stringunits.append(contentsOf: variations?.device?.values.map(\.stringUnit) ?? [])
-			return stringunits
+			stringUnits.append(
+				contentsOf: variations?.plural?.values.map(\.stringUnit) ?? []
+			)
+			stringUnits.append(
+				contentsOf: variations?.device?.values.map(\.stringUnit) ?? []
+			)
+			return stringUnits
 		}()
-		
-		if allstringunits.isEmpty {
+
+		if allStringUnits.isEmpty {
+			if isBaseLanguage {
+				return .none
+			}
 			return .notTranslated
 		} else {
 			// get the first state
-			let firstState = allstringunits[0].state
-			return firstState
+			if allStringUnits[0].state == .translated && isBaseLanguage {
+				return .none
+			} else {
+				return allStringUnits[0].state
+			}
 		}
 	}
 }
