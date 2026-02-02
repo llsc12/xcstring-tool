@@ -9,7 +9,7 @@ import Foundation
 import SwiftTUI
 
 struct ContentView: View {
-	var editorViewModel: EditorViewModel = .init()
+	var fileLoadingModel: FileLoadingModel = .shared
 	@State var fileDidntExist: Bool = false
 	@State var invalidFile: Bool = false
 
@@ -18,8 +18,8 @@ struct ContentView: View {
 	@State var partial: String?
 
 	var body: some View {
-		if editorViewModel.localizationFile != nil {
-			EditorView(editorViewModel: editorViewModel)
+		if fileLoadingModel.file != nil {
+			EditorView()
 		} else {
 			startupMenu
 		}
@@ -33,6 +33,7 @@ struct ContentView: View {
 				VStack {
 					Text("xcstring-tool")
 						.bold()
+					Divider()
 					Text("Edit xcstrings files")
 					Text("anywhere!")
 
@@ -109,11 +110,11 @@ struct ContentView: View {
 					.underline()
 					.padding(.bottom, 1)
 
-				if editorViewModel.fileHistory.isEmpty {
+				if fileLoadingModel.fileHistory.isEmpty {
 					Text("Recently opened files will appear here!")
 						.foregroundColor(.gray)
 				} else {
-					ForEach(editorViewModel.fileHistory, id: \.self) { url in
+					ForEach(fileLoadingModel.fileHistory, id: \.self) { url in
 						Button("\(url.absoluteURL.path)") {
 							self.textfieldSubmit(url.absoluteURL.path)
 						}
@@ -148,7 +149,7 @@ struct ContentView: View {
 			return
 		}
 		self.partial = path
-		self.editorViewModel.file = url
+		self.fileLoadingModel.file = url
 	}
 
 	func textfieldUpdate(_ partialPath: String) {

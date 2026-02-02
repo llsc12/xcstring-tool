@@ -1,0 +1,28 @@
+{
+  "configurations": [
+    {
+      "type": "lldb",
+      "request": "launch",
+      "sourceLanguages": [
+        "swift"
+      ],
+      "args": [],
+      "cwd": "${workspaceFolder:xcstring-tool}",
+      "name": "Debug xcstring-tool",
+      "program": "${workspaceFolder:xcstring-tool}/.build/debug/xcstring-tool",
+      "preLaunchTask": "swift: Build Debug xcstring-tool"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "sourceLanguages": [
+        "swift"
+      ],
+      "args": [],
+      "cwd": "${workspaceFolder:xcstring-tool}",
+      "name": "Release xcstring-tool",
+      "program": "${workspaceFolder:xcstring-tool}/.build/release/xcstring-tool",
+      "preLaunchTask": "swift: Build Release xcstring-tool"
+    }
+  ]
+}

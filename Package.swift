@@ -9,12 +9,18 @@ let package = Package(
 		.macOS(.v14)
 	],
 	products: [
-		.executable(name: "xcstring-tool", targets: [
-			"xcstring-tool"
-		])
+		.executable(
+			name: "xcstring-tool",
+			targets: [
+				"xcstring-tool"
+			]
+		)
 	],
 	dependencies: [
-		.package(url: "https://github.com/llsc12/SwiftTUI", revision: "1f42222c2f3fe86d0098e93495420be6bf9c5ea9"),
+		.package(
+			url: "https://github.com/llsc12/SwiftTUI",
+			revision: "6f6b579b23e164643c5d6306b6556b3148f17a59"
+		)
 	],
 	targets: [
 		// Targets are the basic building blocks of a package, defining a module or a test suite.
@@ -22,7 +28,7 @@ let package = Package(
 		.executableTarget(
 			name: "xcstring-tool",
 			dependencies: [
-				.product(name: "SwiftTUI", package: "SwiftTUI"),
+				.product(name: "SwiftTUI", package: "SwiftTUI")
 			]
 		)
 	]
