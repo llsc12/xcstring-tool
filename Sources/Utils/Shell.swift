@@ -20,7 +20,7 @@ public struct Shell {
     task.standardOutput = pipe
     task.currentDirectoryPath = path?.path ?? URL.currentDirectory().path
     task.arguments = ["-c", command.joined(separator: " ")]
-    task.executableURL = URL(fileURLWithPath: "/bin/zsh")
+    task.executableURL = URL(fileURLWithPath: "/bin/sh")
     task.standardInput = nil
 
     try task.run()
