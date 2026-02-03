@@ -1,5 +1,6 @@
 # xcstring-tool
 A cross-platform terminal UI tool for editing Xcode's localisation files, xcstrings. 
+Windows untested.
 
 ## Installing and using
 Download the notarised binary from the [releases](https://github.com/llsc12/xcstring-tool/releases/latest) and put it in a folder that's part of your PATH.
