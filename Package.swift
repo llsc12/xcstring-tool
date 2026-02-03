@@ -19,7 +19,7 @@ let package = Package(
 	dependencies: [
 		.package(
 			url: "https://github.com/llsc12/SwiftTUI",
-			revision: "6f6b579b23e164643c5d6306b6556b3148f17a59"
+			revision: "a7e38cb02d8e68e6a33ce7349847ba494b5e2ea2"
 		)
 	],
 	targets: [

@@ -675,6 +675,46 @@ extension FileLoadingModel {
     file.strings[key] = stringSet
     localizationFile = file
   }
+  
+  // Add a new language to the localization file
+  func addLanguage(_ languageCode: String) {
+	guard var file = localizationFile else { return }
+	
+	// Validate that the language doesn't already exist
+	let existingLanguages = Set(
+	  file.strings.values
+		.compactMap(\.localizations)
+		.flatMap(\.keys)
+		.map { $0 as String }
+	)
+	
+	guard !existingLanguages.contains(languageCode) else {
+	  return
+	}
+	
+	// Initialize the language by adding an empty localization to at least one key
+	// We'll add it to all keys that have the source language
+	for (key, _) in file.strings {
+	  // Only add to keys that should be translated
+	  guard file.strings[key]?.shouldTranslate ?? true else { continue }
+	  
+	  // Initialize with an empty, untranslated state
+	  if file.strings[key]?.localizations == nil {
+		file.strings[key]?.localizations = [:]
+	  }
+	  
+	  file.strings[key]?.localizations?[languageCode] = Localization(
+		stringUnit: StringUnit(
+		  state: .notTranslated,
+		  value: ""
+		),
+		variations: nil
+	  )
+	}
+	
+	// Update the file
+	localizationFile = file
+  }
 
   // Remove a specific plural form
   func removePluralForm(key: String, language: String, pluralForm: String) {
