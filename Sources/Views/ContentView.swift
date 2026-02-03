@@ -9,182 +9,201 @@ import Foundation
 import SwiftTUI
 
 struct ContentView: View {
-	var fileLoadingModel: FileLoadingModel = .shared
-	@State var fileDidntExist: Bool = false
-	@State var invalidFile: Bool = false
+  var fileLoadingModel: FileLoadingModel = .shared
+  @State var fileDidntExist: Bool = false
+  @State var invalidFile: Bool = false
 
-	@State var searchTask: Task<Void, Never>? = nil
-	@State var relevantPaths: [URL] = []
-	@State var partial: String?
+  @State var relevantPaths: [URL] = []
+  @State var textfieldUpdate = true
+  @State var partial: String?
 
-	var body: some View {
-		if fileLoadingModel.file != nil {
-			EditorView()
-		} else {
-			startupMenu
-		}
-	}
+  var body: some View {
+    if fileLoadingModel.file != nil {
+      EditorView()
+    } else {
+      startupMenu
+    }
+  }
 
-	@State var repoButton: Bool = false
+  @State var repoButton: Bool = false
 
-	var startupMenu: some View {
-		HStack {
-			VStack {
-				VStack {
-					Text("xcstring-tool")
-						.bold()
-					Divider()
-					Text("Edit xcstrings files")
-					Text("anywhere!")
+  var startupMenu: some View {
+    HStack {
+      VStack {
+        VStack {
+          Text("xcstring-tool")
+            .bold()
+          Divider()
+          Text("Edit xcstrings files")
+          Text("anywhere!")
 
-					Spacer()
+          Spacer()
 
-					if repoButton {
-						Button("llsc12/xcstring-tool") {
-							let url = "\"https://github.com/llsc12/xcstring-tool\""
-							#if os(macOS)
-								_ = try? Shell.run("open", url)
-							#elseif os(Linux)
-								_ = try? Shell.run("xdg-open", url)
-							#endif
-						}
-					}
+          if repoButton {
+            Button("llsc12/xcstring-tool") {
+              let url = "\"https://github.com/llsc12/xcstring-tool\""
+              #if os(macOS)
+                _ = try? Shell.run("open", url)
+              #elseif os(Linux)
+                _ = try? Shell.run("xdg-open", url)
+              #endif
+            }
+          }
 
-					Text("v\(_version)")
-						.bold()
-						.onAppear {
-							DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-								repoButton = true
-							}
-						}
-				}
-				.frame(maxWidth: .infinity)
-				.border(style: .rounded)
-			}
-			.frame(width: 25)
+          Text("v\(_version)")
+            .bold()
+            .onAppear {
+              DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                repoButton = true
+              }
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .border(style: .rounded)
+      }
+      .frame(width: 25)
 
-			VStack {
-				HStack {
-					Group {
-						if fileDidntExist {
-							Text("No such file")
-								.foregroundColor(.red)
-						} else if invalidFile {
-							Text("Invalid file")
-								.foregroundColor(.red)
-						} else {
-							Text("File Search ")
-						}
-					}
-					.bold()
-					.padding(.left, 1)
+      VStack {
+        HStack {
+          Group {
+            if fileDidntExist {
+              Text("No such file")
+                .foregroundColor(.red)
+            } else if invalidFile {
+              Text("Invalid file")
+                .foregroundColor(.red)
+            } else {
+              Text("File Search ")
+            }
+          }
+          .bold()
+          .padding(.left, 1)
 
-					Divider()
+          Divider()
 
-					TextField(
-						placeholder: "Search Files",
-						initialValue: partial ?? "",
-						action: textfieldSubmit(_:),
-						update: textfieldUpdate(_:)
-					)
-					.environment(\.placeholderColor, .gray)
+          if textfieldUpdate {
+            TextField(
+              placeholder: "Search Files",
+              initialValue: partial ?? "",
+              action: textfieldSubmit(_:),
+              update: textfieldUpdate(_:)
+            )
+            .environment(\.placeholderColor, .gray)
+          }
 
-					Spacer()
-				}
-				.frame(maxHeight: 1)
+          Spacer()
+        }
+        .frame(maxHeight: 1)
 
-				Divider()
+        Divider()
 
-				filebox
-					.padding(.left, 1)
-			}
-			.frame(maxWidth: .infinity, maxHeight: .infinity)
-			.border(style: .rounded)
-		}
-	}
+        filebox
+          .padding(.left, 1)
+      }
+      .frame(maxWidth: .infinity, maxHeight: .infinity)
+      .border(style: .rounded)
+    }
+  }
 
-	@ViewBuilder var filebox: some View {
-		if relevantPaths.isEmpty {
-			ScrollView {
-				Text("Recent Files")
-					.underline()
-					.padding(.bottom, 1)
+  @ViewBuilder var filebox: some View {
+    if relevantPaths.isEmpty {
+      ScrollView {
+        Text("Recent Files")
+          .underline()
+          .padding(.bottom, 1)
 
-				if fileLoadingModel.fileHistory.isEmpty {
-					Text("Recently opened files will appear here!")
-						.foregroundColor(.gray)
-				} else {
-					ForEach(fileLoadingModel.fileHistory, id: \.self) { url in
-						Button("\(url.absoluteURL.path)") {
-							self.textfieldSubmit(url.absoluteURL.path)
-						}
-					}
-				}
-			}
-		} else {
-			ScrollView {
-				ForEach(relevantPaths, id: \.self) { url in
-					Button("./\(url.lastPathComponent)") {
-						self.textfieldSubmit(url.absoluteURL.path)
-					}
-				}
-			}
-		}
-	}
+        if fileLoadingModel.fileHistory.isEmpty {
+          Text("Recently opened files will appear here!")
+            .foregroundColor(.gray)
+        } else {
+          ForEach(fileLoadingModel.fileHistory, id: \.self) { url in
+            Button("\(url.absoluteURL.path)") {
+              self.textfieldSubmit(url.absoluteURL.path)
+            }
+          }
+        }
+      }
+    } else {
+      ScrollView {
+        ForEach(relevantPaths, id: \.self) { url in
+          Button("./\(url.lastPathComponent)") {
+            self.textfieldSubmit(url.absoluteURL.path)
+          }
+        }
+      }
+    }
+  }
 
-	func textfieldSubmit(_ path: String) {
-		let url = URL(fileURLWithPath: path)
-		if !FileManager.default.fileExists(atPath: url.path) {
-			self.fileDidntExist = true
-			DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-				self.fileDidntExist = false
-			}
-			return
-		}
-		if !url.pathExtension.hasSuffix("xcstrings") {
-			self.invalidFile = true
-			DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-				self.invalidFile = false
-			}
-			return
-		}
-		self.partial = path
-		self.fileLoadingModel.file = url
-	}
+  func textfieldSubmit(_ path: String) {
+    let url = URL(fileURLWithPath: path)
+    if !FileManager.default.fileExists(atPath: url.path) {
+      self.fileDidntExist = true
+      DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+        self.fileDidntExist = false
+      }
+      return
+    }
+    if !url.pathExtension.hasSuffix("xcstrings") {
+      // if url is a directory, set the textfield to the directory path and show its contents
+      if url.hasDirectoryPath {
+		// resolve ./.. to absolute path
+		let abspath = url.standardizedFileURL.path
+        self.partial = abspath
+        self.textfieldUpdate(partial ?? "")
+        self.textfieldUpdate = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) { // force update
+          self.textfieldUpdate = true
+        }
+        return
+      }
 
-	func textfieldUpdate(_ partialPath: String) {
-		if partialPath.isEmpty {
-			self.relevantPaths = []
-			self.partial = nil
-			return
-		}
-		let url = URL(
-			fileURLWithPath: partialPath.replacingOccurrences(
-				of: "~",
-				with: NSHomeDirectory()
-			)
-		)
-		var partial = url
-		if !FileManager.default.fileExists(atPath: url.absoluteURL.path) {
-			partial = url.deletingLastPathComponent()
-			self.partial = partialPath
-		}
-		if !url.hasDirectoryPath {
-			partial = url.deletingLastPathComponent()
-			self.partial = partialPath
-		}
+      self.invalidFile = true
+      DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+        self.invalidFile = false
+      }
+      return
+    }
+    self.partial = path
+    self.fileLoadingModel.file = url
+  }
 
-		let paths = try? FileManager.default
-			.contentsOfDirectory(
-				at: partial.absoluteURL,
-				includingPropertiesForKeys: nil,
-				options: [.skipsHiddenFiles]
-			)
-			.filter {
-				$0.lastPathComponent.hasSuffix(".xcstrings") || $0.hasDirectoryPath
-			}
-			.sorted { $0.hasDirectoryPath || $0.path < $1.path }
+  func textfieldUpdate(_ partialPath: String) {
+    if partialPath.isEmpty {
+      self.relevantPaths = []
+      self.partial = nil
+      return
+    }
+    let url = URL(
+      fileURLWithPath: partialPath.replacingOccurrences(
+        of: "~",
+        with: NSHomeDirectory()
+      )
+    )
+    var partial = url
+    if !FileManager.default.fileExists(atPath: url.absoluteURL.path) {
+      partial = url.deletingLastPathComponent()
+      self.partial = partialPath
+    }
+    if !url.hasDirectoryPath {
+      partial = url.deletingLastPathComponent()
+      self.partial = partialPath
+    }
 
-		self.relevantPaths = paths ?? []
-	}
+    var paths = try? FileManager.default
+      .contentsOfDirectory(
+        at: partial.absoluteURL,
+        includingPropertiesForKeys: nil,
+        options: [.skipsHiddenFiles]
+      )
+      .filter {
+        $0.lastPathComponent.hasSuffix(".xcstrings") || $0.hasDirectoryPath
+      }
+      .sorted { $0.hasDirectoryPath || $0.path < $1.path }
+
+    // backward navigation
+	let parent = partial.appending(component: "..")
+    paths?.insert(parent, at: 0)
+
+    self.relevantPaths = paths ?? []
+  }
 }
